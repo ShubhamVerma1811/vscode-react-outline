@@ -2,11 +2,13 @@
   "name": "react-outline",
   "displayName": "React Outline",
   "description": "A simple extension that shows the symbols and outlines for a React file.",
-  "version": "1.0.0",
+  "version": "1.0.1",
+  "publisher": "ShubhamVerma18",
   "author": {
     "name": "Shubham Verma",
     "url": "https://shbm.fyi"
   },
+  "icon": "./public/icon.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/ShubhamVerma1811/vscode-react-outline"
