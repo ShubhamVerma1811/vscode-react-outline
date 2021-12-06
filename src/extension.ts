@@ -5,24 +5,25 @@ export function activate(ctx: vscode.ExtensionContext): void {
   ctx.subscriptions.push(
     vscode.languages.registerDocumentSymbolProvider(
       { scheme: "file", language: "typescriptreact" },
-      new ReactOutlineSymbolProvider()
+      new ReactDocumentSymbolProvider()
     ),
     vscode.languages.registerDocumentSymbolProvider(
       { scheme: "file", language: "javascriptreact" },
-      new ReactOutlineSymbolProvider()
+      new ReactDocumentSymbolProvider()
     )
   );
 }
 
-// this method is called when your extension is deactivated
 export function deactivate() {}
 
-class ReactOutlineSymbolProvider implements vscode.DocumentSymbolProvider {
+class ReactDocumentSymbolProvider implements vscode.DocumentSymbolProvider {
   public provideDocumentSymbols(
     document: vscode.TextDocument,
     token: vscode.CancellationToken
   ): Thenable<vscode.DocumentSymbol[]> {
-    const symbols = getSymbolTree(document.getText());
-    return Promise.resolve(symbols);
+    return new Promise((resolve, reject) => {
+      const symbols = getSymbolTree(document.getText());
+      resolve(symbols);
+    });
   }
 }

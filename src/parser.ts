@@ -1,10 +1,9 @@
 import { parse } from "@babel/parser";
 import traverse, { NodePath } from "@babel/traverse";
 import { JSXElement } from "@babel/types";
-import { DocumentSymbol, Range, SymbolKind } from "vscode";
+import { DocumentSymbol, Position, Range, SymbolKind } from "vscode";
 
 let firstJSXElement: NodePath<JSXElement>["node"];
-let symbols: DocumentSymbol[] = [];
 
 export const getSymbolTree = (code: string): DocumentSymbol[] => {
   const ast = parse(code, {
@@ -12,6 +11,7 @@ export const getSymbolTree = (code: string): DocumentSymbol[] => {
     plugins: ["jsx", "typescript"]
   });
 
+  // TODO: Look for better way, maybe traverse recursively inside the preOrder?
   traverse(ast, {
     JSXElement(path) {
       firstJSXElement = path.node;
@@ -19,38 +19,39 @@ export const getSymbolTree = (code: string): DocumentSymbol[] => {
     }
   });
 
-  preOrderTraversal(firstJSXElement);
+  const symbols = preOrderTraversal(firstJSXElement);
 
-  return symbols;
+  return [symbols];
 };
 
+// TODO: handle for Fragement and JSXExpressions
 const preOrderTraversal = (node: NodePath<JSXElement>["node"]) => {
   let symbol: DocumentSymbol;
-
   const { openingElement, loc, children } = node;
 
-  // TODO: nodes are in order but are getting repeated and symbols are not in order
-  // TODO: something is wrong with the logic here.
+  const range = new Range(
+    // @ts-ignore
+    new Position(loc?.start.line, loc?.start.column),
+    // @ts-ignore
 
-  console.log("CURRENT NODE", openingElement.name.name);
-
-  symbol = new DocumentSymbol(
-    openingElement.name.name,
-    "",
-    SymbolKind.Function,
-    new Range(0, 0, 0, 0),
-    new Range(0, 0, 0, 0)
+    new Position(loc?.start.line, loc?.start.column)
   );
 
-  if (children.length > 0) {
-    children.forEach((child) => {
-      if (child.type === "JSXElement") {
-        preOrderTraversal(child);
-      }
-    });
+  symbol = new DocumentSymbol(
+    // @ts-ignore
+    openingElement.name.name,
+    "",
+    SymbolKind.Variable,
+    range,
+    range
+  );
+
+  for (const child of children) {
+    if (child.type === "JSXElement") {
+      const response = preOrderTraversal(child);
+      symbol.children.push(response);
+    }
   }
 
-  symbols.push(symbol);
-
-  return;
+  return symbol;
 };
