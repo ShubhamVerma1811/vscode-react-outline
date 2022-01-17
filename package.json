@@ -2,7 +2,7 @@
   "name": "react-outline",
   "displayName": "React Outline",
   "description": "A simple extension that shows the symbols and outlines for a React file.",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "publisher": "ShubhamVerma18",
   "preview": true,
   "author": {
@@ -49,6 +49,7 @@
     "@typescript-eslint/parser": "^5.1.0",
     "eslint": "^8.1.0",
     "glob": "^7.1.7",
+    "prettier": "^2.5.1",
     "typescript": "^4.4.4"
   },
   "dependencies": {
