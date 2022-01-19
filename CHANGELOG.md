@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.4]
+
+- Added support for ConditionalExpressions, LogicalExpressions
+
 ## [1.0.3]
 
 - Added support for multiple components
