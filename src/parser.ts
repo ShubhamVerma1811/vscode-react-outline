@@ -1,9 +1,21 @@
 import { parse } from "@babel/parser";
-import traverse, { NodePath } from "@babel/traverse";
-import { JSXElement, JSXFragment, JSXMemberExpression } from "@babel/types";
+import traverse from "@babel/traverse";
+import {
+  ConditionalExpression,
+  JSXElement,
+  JSXFragment,
+  JSXMemberExpression,
+  LogicalExpression,
+  SourceLocation
+} from "@babel/types";
 import { DocumentSymbol, Position, Range, SymbolKind } from "vscode";
 
-type Node = JSXElement | JSXFragment | JSXMemberExpression;
+type Node =
+  | JSXElement
+  | JSXFragment
+  | JSXMemberExpression
+  | ConditionalExpression
+  | LogicalExpression;
 
 export const getSymbolTree = (code: string): DocumentSymbol[] => {
   const nodes: Node[] = [];
@@ -13,75 +25,68 @@ export const getSymbolTree = (code: string): DocumentSymbol[] => {
   });
 
   traverse(ast, {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     JSXElement(path) {
       nodes.push(path.node);
       path.stop();
     },
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     JSXFragment(path) {
       nodes.push(path.node);
       path.stop();
+    },
+    ConditionalExpression(path) {
+      nodes.push(path.node);
+      path.stop();
+    },
+    LogicalExpression(path) {
+      nodes.push(path.node);
+      path.stop();
     }
-    // TODO: handle JSXExpression, ConditionalExpression, LogicalExpression
   });
 
   const symbols = parseDocumentSymbols(nodes);
   return symbols;
 };
 
-const generateSymbolTree = (
-  node: NodePath<JSXElement>["node"]
-): DocumentSymbol => {
-  const { openingElement, loc } = node;
-  if (!loc) {
-    throw new Error("No location");
-  }
-
-  const position = new Position(loc?.start.line - 1, loc?.start.column - 1);
-  const range = new Range(position, position);
-
-  const name = () => {
-    if (openingElement.name.type === "JSXMemberExpression") {
-      // @ts-ignore
-      return `${openingElement.name.object.name}.${openingElement.name.property.name}`;
-    } else {
-      return openingElement.name.name;
-    }
-  };
-
-  return new DocumentSymbol(
-    // TODO: fix types
-    // @ts-ignore
-    name(),
-    "",
-    SymbolKind.Variable,
-    range,
-    range
-  );
-};
-
 const parseDocumentSymbols = (nodes: Node[]): DocumentSymbol[] => {
   const symbols: DocumentSymbol[] = [];
-  nodes.forEach((node) => {
+  for (const node of nodes) {
     if (node.type === "JSXElement") {
       const symbol = parseJSXElement(node);
       symbols.push(symbol);
     } else if (node.type === "JSXFragment") {
       const symbol = parseJSXFragment(node);
-
+      symbols.push(symbol);
+    } else if (node.type === "ConditionalExpression") {
+      const symbol = parseConditionalExpression(node);
+      symbols.push(symbol);
+    } else if (node.type === "LogicalExpression") {
+      const symbol = parseLogicalExpression(node);
       symbols.push(symbol);
     }
-  });
+  }
 
   return symbols;
 };
 
 const parseJSXElement = (node: JSXElement) => {
-  let symbol: DocumentSymbol;
   const { children } = node;
 
-  symbol = generateSymbolTree(node);
+  const name = () => {
+    if (node.openingElement.name.type === "JSXMemberExpression") {
+      // @ts-ignore
+      return `${node.openingElement.name.object.name}.${node.openingElement.name.property.name}`;
+    } else {
+      return node.openingElement.name.name as string;
+    }
+  };
+
+  const symbol = generateDocumentSymbol(
+    name(),
+    "",
+    SymbolKind.Variable,
+    // @ts-ignore
+    getRange(node.loc)
+  );
   parseChildren<typeof children>(symbol, children);
 
   return symbol;
@@ -92,18 +97,12 @@ const parseJSXFragment = (node: JSXFragment): DocumentSymbol => {
   if (!node.loc) {
     throw new Error("No LOC");
   }
-  const position = new Position(
-    node.loc?.start.line - 1,
-    node.loc?.start.column - 1
-  );
-  const range = new Range(position, position);
 
-  let symbol: DocumentSymbol = new DocumentSymbol(
+  let symbol: DocumentSymbol = generateDocumentSymbol(
     "Fragment",
     "",
-    SymbolKind.Field,
-    range,
-    range
+    SymbolKind.Function,
+    getRange(node.loc)
   );
 
   parseChildren<typeof node.children>(symbol, node?.children);
@@ -120,6 +119,88 @@ function parseChildren<T extends Array<any>>(
       symbol.children.push(response);
     } else if (child.type === "JSXFragment") {
       symbol.children.push(parseJSXFragment(child));
+    } else if (child.type === "JSXExpressionContainer") {
+      if (child.expression.type === "ConditionalExpression") {
+        const response = parseConditionalExpression(child);
+        symbol.children.push(response);
+      } else if (child.expression.type === "LogicalExpression") {
+        const response = parseLogicalExpression(child);
+        symbol.children.push(response);
+      }
     }
   }
 }
+
+const parseConditionalExpression = (node: any) => {
+  const exp = node?.expression;
+  let alternate, consequent;
+
+  if (exp) {
+    alternate = exp.alternate;
+    consequent = exp.consequent;
+  } else {
+    alternate = node.alternate;
+    consequent = node.consequent;
+  }
+
+  const { loc } = node;
+  if (!loc) {
+    throw new Error("No location");
+  }
+
+  const symbol: DocumentSymbol = generateDocumentSymbol(
+    "ConditionalExpression",
+    "",
+    SymbolKind.Class,
+    getRange(loc)
+  );
+
+  parseChildren<typeof consequent>(symbol, [consequent]);
+  parseChildren<typeof alternate>(symbol, [alternate]);
+
+  return symbol;
+};
+
+const parseLogicalExpression = (node: any) => {
+  let left, right;
+  const exp = node?.expression;
+
+  if (exp) {
+    left = exp.left;
+    right = exp.right;
+  } else {
+    left = node.left;
+    right = node.right;
+  }
+
+  const symbol = generateDocumentSymbol(
+    "LogicalExpression",
+    "",
+    SymbolKind.Class,
+    getRange(node.loc)
+  );
+
+  parseChildren<typeof left>(symbol, [left]);
+  parseChildren<typeof right>(symbol, [right]);
+
+  return symbol;
+};
+
+const getRange = (loc: SourceLocation) => {
+  if (!loc) {
+    throw new Error("No location");
+  }
+  const position = new Position(loc?.start.line - 1, loc?.start.column - 1);
+  const range = new Range(position, position);
+
+  return range;
+};
+
+const generateDocumentSymbol = (
+  name: string,
+  detail: string,
+  symbol: SymbolKind,
+  range: Range
+): DocumentSymbol => {
+  return new DocumentSymbol(name, detail, symbol, range, range);
+};
