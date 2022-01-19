@@ -1,12 +1,11 @@
-# Change Log
+# Changelog
 
-## [1.0.0]
+## [1.0.3]
 
-- Initial release
-
-## [1.0.1]
-
-- Added Icons
+- Added support for multiple components
+- Added support for Fragments, MemberExpressions
+- Added support for nested Elements, Fragments and Top Level ConditionalExpressions, LogicalExpressions
+- TODO: Add support for nested ConditionalExpressions, LogicalExpressions
 
 ## [1.0.2]
 
@@ -17,9 +16,10 @@
 
 - New Icon
 
-## [1.0.3]
+## [1.0.1]
 
-- Added support for multiple components
-- Added support for Fragments, MemberExpressions
-- Added support for nested Elements, Fragments and Top Level ConditionalExpressions, LogicalExpressions
-- TODO: Add support for nested ConditionalExpressions, LogicalExpressions
+- Added Icons
+
+## [1.0.0]
+
+- Initial release
