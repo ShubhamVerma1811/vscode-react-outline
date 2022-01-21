@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.5]
+
+- Revert root level support for ConditionalExpressions, LogicalExpressions
+- TODO: Support for loops `[].map(i => <JSX/>)`
+
 ## [1.0.4]
 
 - Added support for ConditionalExpressions, LogicalExpressions
