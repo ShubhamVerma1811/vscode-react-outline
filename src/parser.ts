@@ -32,14 +32,6 @@ export const getSymbolTree = (code: string): DocumentSymbol[] => {
     JSXFragment(path) {
       nodes.push(path.node);
       path.stop();
-    },
-    ConditionalExpression(path) {
-      nodes.push(path.node);
-      path.stop();
-    },
-    LogicalExpression(path) {
-      nodes.push(path.node);
-      path.stop();
     }
   });
 
