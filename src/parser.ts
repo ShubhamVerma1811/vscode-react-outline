@@ -1,3 +1,10 @@
+/*
+  TODO: REFACTOR and TYPINGS
+  * - Make generics functions to parse any type of node
+  * - Right now there is duplicated code
+  * @ShubhamVerma1811 - Take a look at this in the future
+*/
+
 import { parse } from "@babel/parser";
 import traverse from "@babel/traverse";
 import {
@@ -84,7 +91,6 @@ const parseJSXElement = (node: JSXElement) => {
   return symbol;
 };
 
-// TODO: refactor
 const parseJSXFragment = (node: JSXFragment): DocumentSymbol => {
   if (!node.loc) {
     throw new Error("No LOC");
@@ -118,10 +124,40 @@ function parseChildren<T extends Array<any>>(
       } else if (child.expression.type === "LogicalExpression") {
         const response = parseLogicalExpression(child);
         symbol.children.push(response);
+      } else if (child.expression.type === "CallExpression") {
+        const response = parseCallExpression(child);
+        symbol.children.push(response as DocumentSymbol);
       }
     }
   }
 }
+
+const parseCallExpression = (node: any) => {
+  const args = node.expression.arguments;
+  const exp = args[0];
+
+  if (exp.type === "ArrowFunctionExpression") {
+    if (
+      exp.body.type === "BlockStatement" &&
+      exp.body.body[0].type === "ReturnStatement"
+    ) {
+      if (exp.body.body[0].argument.type === "JSXElement") {
+        return parseJSXElement(exp.body.body[0].argument);
+      } else if (exp.body.body[0].argument.type === "ConditionalExpression") {
+        return parseConditionalExpression(exp.body.body[0].argument);
+      } else if (exp.body.body[0].argument.type === "LogicalExpression") {
+        return parseLogicalExpression(exp.body.body[0].argument);
+      }
+    }
+    if (exp.body.type === "JSXElement") {
+      return parseJSXElement(exp.body);
+    } else if (exp.body.type === "ConditionalExpression") {
+      return parseConditionalExpression(exp.body);
+    } else if (exp.body.type === "LogicalExpression") {
+      return parseLogicalExpression(exp.body);
+    }
+  }
+};
 
 const parseConditionalExpression = (node: any) => {
   const exp = node?.expression;
