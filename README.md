@@ -31,6 +31,9 @@ It can detect:
 - JSXElements
 - JSXFragments
 - JSXMemberExpressions
+  - Logical expressions
+  - Conditional expressions
+  - Call expressions
 
 Here are the screenshots of with and without the extension:
 
