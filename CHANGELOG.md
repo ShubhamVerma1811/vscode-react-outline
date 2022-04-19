@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.7]
+
+- Revert 1.0.6 due to some issues
+
+## [1.0.6]
+
+- Added support for Call Expressions, which means the code inside map,filter,reduce etc. will be outlined.
+- TODO: Refactor, Types, and other improvements.
+
 ## [1.0.5]
 
 - Revert root level support for ConditionalExpressions, LogicalExpressions

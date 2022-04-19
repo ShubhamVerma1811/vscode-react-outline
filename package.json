@@ -2,7 +2,7 @@
   "name": "react-outline",
   "displayName": "React Outline",
   "description": "A simple extension that shows the symbols and outlines for a React file.",
-  "version": "1.0.5",
+  "version": "1.0.7",
   "publisher": "ShubhamVerma18",
   "preview": true,
   "author": {
