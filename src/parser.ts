@@ -124,9 +124,6 @@ function parseChildren<T extends Array<any>>(
       } else if (child.expression.type === "LogicalExpression") {
         const response = parseLogicalExpression(child);
         symbol.children.push(response);
-      } else if (child.expression.type === "CallExpression") {
-        const response = parseCallExpression(child);
-        symbol.children.push(response as DocumentSymbol);
       }
     }
   }

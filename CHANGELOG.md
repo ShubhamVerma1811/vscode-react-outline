@@ -1,8 +1,8 @@
 # Changelog
 
-## [1.0.7]
+## [1.0.7 - 1.0.8]
 
-- Revert 1.0.6 due to some issues
+- Revert 1.0.6 due to some bugs I created. Whoops.
 
 ## [1.0.6]
 
