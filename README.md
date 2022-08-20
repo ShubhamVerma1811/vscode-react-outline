@@ -2,6 +2,10 @@
 
 ---
 
+![](https://vsmarketplacebadge.apphb.com/version/ShubhamVerma18.react-outline.svg)
+![](https://vsmarketplacebadge.apphb.com/installs-short/ShubhamVerma18.react-outline.svg)
+![](https://vsmarketplacebadge.apphb.com/trending-weekly/ShubhamVerma18.react-outline.svg)
+
 ## Support
 
 If you liked this extensions then check out my other [extensions](https://marketplace.visualstudio.com/publishers/ShubhamVerma18) and [Follow me on Twitter 💙](https://shbm.fyi/tw).
