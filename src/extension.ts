@@ -1,6 +1,5 @@
 import * as vscode from "vscode";
-import { getSymbolTree } from "./parser";
-
+import { Parse } from './parse'
 export function activate(ctx: vscode.ExtensionContext): void {
   showNewVersionMessage(ctx);
   ctx.subscriptions.push(
@@ -15,15 +14,15 @@ export function activate(ctx: vscode.ExtensionContext): void {
   );
 }
 
-export function deactivate() {}
+export function deactivate() { }
 
 class ReactDocumentSymbolProvider implements vscode.DocumentSymbolProvider {
   public provideDocumentSymbols(
     document: vscode.TextDocument,
-    token: vscode.CancellationToken
   ): Thenable<vscode.DocumentSymbol[]> {
-    return new Promise((resolve, reject) => {
-      const symbols = getSymbolTree(document.getText());
+    return new Promise((resolve) => {
+      const parse = new Parse(document.getText());
+      const symbols = parse.getDocumentSymbolTree();
       resolve(symbols);
     });
   }
